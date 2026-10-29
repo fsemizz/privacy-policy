@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Email confirmation</title>
+<style>
+  :root { color-scheme: light dark; --fg: #1b1f2a; --bg: #ffffff; --muted: #6b7280; --box: #f6f7f9; --line: #e5e7eb; --ok: #15803d; --bad: #b91c1c; }
+  @media (prefers-color-scheme: dark) {
+    :root { --fg: #e6e8ef; --bg: #12141c; --muted: #9aa1b2; --box: #1a1d28; --line: #2a2f3d; --ok: #4ade80; --bad: #f87171; }
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans Arabic", sans-serif;
+    line-height: 1.6; max-width: 520px; margin: 0 auto; padding: 56px 20px;
+    color: var(--fg); background: var(--bg); text-align: center;
+  }
+  .box { background: var(--box); border: 1px solid var(--line); border-radius: 12px; padding: 28px 22px; }
+  .icon { font-size: 44px; line-height: 1; }
+  .ok .icon { color: var(--ok); }
+  .bad .icon { color: var(--bad); }
+  h1 { font-size: 1.35rem; margin: 14px 0 8px; }
+  p { margin: 0; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="box ok" id="box">
+  <div class="icon" id="icon" aria-hidden="true">✓</div>
+  <h1 id="title">Email confirmed</h1>
+  <p id="body">Your account is ready. Return to the app and sign in.</p>
+</div>
+<script>
+(function () {
+  var T = {
+    en: { okT: "Email confirmed", okB: "Your account is ready. Return to the app and sign in.",
+          badT: "Link not valid", badB: "This confirmation link is invalid or has expired. Try signing in to the app; if that fails, register again to get a new email." },
+    tr: { okT: "E-posta onaylandı", okB: "Hesabın hazır. Uygulamaya dönüp giriş yapabilirsin.",
+          badT: "Link geçersiz", badB: "Bu onay linki geçersiz ya da süresi dolmuş. Uygulamada giriş yapmayı dene; olmazsa yeni bir e-posta için tekrar kayıt ol." },
+    es: { okT: "Correo confirmado", okB: "Tu cuenta está lista. Vuelve a la app e inicia sesión.",
+          badT: "Enlace no válido", badB: "Este enlace de confirmación no es válido o ha caducado. Intenta iniciar sesión en la app; si no funciona, regístrate de nuevo para recibir otro correo." },
+    ar: { okT: "تم تأكيد البريد الإلكتروني", okB: "حسابك جاهز. عد إلى التطبيق وسجّل الدخول.",
+          badT: "الرابط غير صالح", badB: "رابط التأكيد هذا غير صالح أو منتهي الصلاحية. حاول تسجيل الدخول في التطبيق؛ وإن لم ينجح، سجّل من جديد لتصلك رسالة جديدة." }
+  };
+  var lang = "en";
+  var prefs = navigator.languages || [navigator.language || "en"];
+  for (var i = 0; i < prefs.length; i++) {
+    var c = String(prefs[i]).slice(0, 2).toLowerCase();
+    if (T[c]) { lang = c; break; }
+  }
+  // Supabase hata durumunda ?error=... ya da #error=... ile döner.
+  var params = new URLSearchParams(location.search + "&" + location.hash.replace(/^#/, ""));
+  var failed = params.has("error") || params.has("error_code");
+  var t = T[lang];
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+  document.title = failed ? t.badT : t.okT;
+  document.getElementById("box").className = "box " + (failed ? "bad" : "ok");
+  document.getElementById("icon").textContent = failed ? "!" : "✓";
+  document.getElementById("title").textContent = failed ? t.badT : t.okT;
+  document.getElementById("body").textContent = failed ? t.badB : t.okB;
+  // Adres çubuğunda kod/belirteç bırakma.
+  if (location.search || location.hash) history.replaceState(null, "", location.pathname);
+})();
+</script>
+</body>
+</html>
